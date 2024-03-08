@@ -2391,12 +2391,15 @@ void mqttCallback(const char *topic, const uint8_t *payload, const unsigned int 
       }
       else
       {
-        return;
+        modeUpper = NULL;
       }
-      hpSendLocalState();
-      hp.setPowerSetting("ON");
-      hp.setModeSetting(modeUpper.c_str());
-      update = true;
+
+      if (modeUpper) {
+        hpSendLocalState();
+        hp.setPowerSetting("ON");
+        hp.setModeSetting(modeUpper.c_str());
+        update = true;
+      }
     }
   }
   else if (strcmp(topic, ha_temp_set_topic.c_str()) == 0)
@@ -2538,11 +2541,11 @@ void mqttCallback(const char *topic, const uint8_t *payload, const unsigned int 
     if (hp.getSettings() == hp.getWantedSettings()) // only update it settings change
     {
       ESP_LOGW(TAG, "Same Settings to HP, Igrore");
-      return;
+    } else {
+      ESP_LOGI(TAG, "Send Settings to HP");
+      requestHpUpdate = true;
+      requestHpUpdateTime = millis() + 10;
     }
-    ESP_LOGI(TAG, "Send Settings to HP");
-    requestHpUpdate = true;
-    requestHpUpdateTime = millis() + 10;
   }
   delete[] message;
 }
