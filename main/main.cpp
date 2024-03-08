@@ -2168,7 +2168,18 @@ String hpGetAction(heatpumpStatus hpStatus, heatpumpSettings hpSettings)
   else if (!hpStatus.operating)
     return "idle";
   else if (hpmode == "auto")
-    return "idle";
+  {
+    // If the "operating" flag is true and the heat pump is in "auto" mode,
+    // it's either heating or cooling, but its status packets don't explicitly
+    // indicate which of those two states it's in. We can infer the state by
+    // comparing the room temperature to the set point temperature.
+    if (hpStatus.roomTemperature > hpSettings.temperature) // above set point
+      return "cooling";
+    else if (hpStatus.roomTemperature < hpSettings.temperature) // below set point
+      return "heating";
+    else
+      return hpmode; // unknown
+  }
   else if (hpmode == "cool")
     return "cooling";
   else if (hpmode == "heat")
